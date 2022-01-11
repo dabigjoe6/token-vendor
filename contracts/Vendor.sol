@@ -3,9 +3,9 @@ pragma solidity ^0.8.0;
 import './JoeToken.sol';
 
 contract Vendor {
-  JoEToken token;
+  JoeToken token;
 
-  constructor(JoEToken _token) {
+  constructor(JoeToken _token) {
     token = _token;
   }
 

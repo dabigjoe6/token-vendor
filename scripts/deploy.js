@@ -16,16 +16,19 @@ async function main() {
   const JoeToken = await hre.ethers.getContractFactory("JoeToken");
   const joeToken = await JoeToken.deploy(1000);
 
-  await joeToken.deployed();
+  const joeTokenInstance = await joeToken.deployed();
 
   console.log("JoeToken deployed to: ", joeToken.address);
 
   const Vendor = await hre.ethers.getContractFactory("Vendor");
-  const vendor = await Vendor.deploy(joeToken);
+  const vendor = await Vendor.deploy(joeToken.address);
 
   await vendor.deployed();
 
   console.log("Vendor deployed to: ", vendor.address);
+
+  await joeTokenInstance.functions.transfer(vendor.address, 10000000);
+
 
 }
 

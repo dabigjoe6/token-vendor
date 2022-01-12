@@ -27,7 +27,14 @@ async function main() {
 
   console.log("Vendor deployed to: ", vendor.address);
 
-  await joeTokenInstance.functions.transfer(vendor.address, 10000000);
+  let amount = hre.ethers.BigNumber.from(10);
+  amount = amount.pow(18);
+  amount = amount.mul(1000);
+
+  // amount = amount.mul(10 ** 18);
+  amount = amount.toString();
+
+  await joeTokenInstance.functions.transfer(vendor.address, amount);
 
 
 }

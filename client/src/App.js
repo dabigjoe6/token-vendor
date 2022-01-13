@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import Web3 from "web3";
+import BN from 'bn.js';
 import vendorContract from './Vendor.json';
 import joeContract from './JoeToken.json';
 
-const VENDOR_ADDRESS = "0x2f14907846F7Cc7025039Ba4dBda4346eBC9Fdec";
-const JOE_TOKEN_ADDRESS = "0xd6b0E82C1ECDae61C87e275e70FD7032b2a9360C";
+const VENDOR_ADDRESS = "0x64C564Cfbf9ACCB289F04B17eC881BE3D4CdB404";
+const JOE_TOKEN_ADDRESS = "0x2da4B2aC59Eb45b09862ba4418487520220a7FcB";
 const App = () => {
   const [provider, setProvider] = useState(null);
   const [address, setAddress] = useState("");
@@ -14,22 +15,28 @@ const App = () => {
     setAmount(e.target.value);
   };
 
-  const buyJoeToken = async (amount) => {
+  const buyJoeToken = async (_amount) => {
     try {
       if (provider && address) {
         const contract = new provider.Contract(vendorContract.abi, VENDOR_ADDRESS);
-        // const contract = new provider.Contract(joeContract.abi, JOE_TOKEN_ADDRESS);
+        const joeC = new provider.Contract(joeContract.abi, JOE_TOKEN_ADDRESS);
 
-        // contract.methods.balanceOf(VENDOR_ADDRESS).call().then(result => {
-        //   console.log('balance', result);
-        // })
+        joeC.methods.balanceOf(VENDOR_ADDRESS).call().then(result => {
+          console.log('balance', result);
+        })
+
+        let ten = new BN(10);
+        let decimal = new BN(18);
+        let power = ten.pow(decimal);
+        let amount = power.mul(new BN(_amount));
+        amount = amount.toString();
 
         provider.sendTransaction({
           from: address,
           to: VENDOR_ADDRESS,
           gasPrice: "20000000000",
           gas: "210640",
-          value: Web3.utils.toWei(String(1 * amount)),
+          value: amount,
           data: contract.methods.buyTokens(amount).encodeABI()
         });
       }

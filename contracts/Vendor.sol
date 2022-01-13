@@ -12,4 +12,8 @@ contract Vendor {
   function buyTokens(uint amount) external payable {
     token.transfer(msg.sender, amount);
   }
+
+  function sell(uint amount) external {
+    token.transferFrom(msg.sender, address(this), amount);
+  }
 }

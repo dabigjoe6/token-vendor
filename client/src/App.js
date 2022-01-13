@@ -4,8 +4,8 @@ import BN from 'bn.js';
 import vendorContract from './Vendor.json';
 import joeContract from './JoeToken.json';
 
-const VENDOR_ADDRESS = "0x64C564Cfbf9ACCB289F04B17eC881BE3D4CdB404";
-const JOE_TOKEN_ADDRESS = "0x2da4B2aC59Eb45b09862ba4418487520220a7FcB";
+const VENDOR_ADDRESS = "0x09F4Bfe5A0D604Fcb14f695DEbca74E65240DC37";
+const JOE_TOKEN_ADDRESS = "0x0E29C407b31aD7b6cc79ba64fE9D9954e82990E9";
 const App = () => {
   const [provider, setProvider] = useState(null);
   const [address, setAddress] = useState("");
@@ -15,35 +15,61 @@ const App = () => {
     setAmount(e.target.value);
   };
 
+  const parseAmount = (_amount) => {
+    let ten = new BN(10);
+    let decimal = new BN(18);
+    let power = ten.pow(decimal);
+    let amount = power.mul(new BN(_amount));
+    return amount.toString();
+  }
+
   const buyJoeToken = async (_amount) => {
     try {
       if (provider && address) {
         const contract = new provider.Contract(vendorContract.abi, VENDOR_ADDRESS);
-        const joeC = new provider.Contract(joeContract.abi, JOE_TOKEN_ADDRESS);
-
-        joeC.methods.balanceOf(VENDOR_ADDRESS).call().then(result => {
-          console.log('balance', result);
-        })
-
-        let ten = new BN(10);
-        let decimal = new BN(18);
-        let power = ten.pow(decimal);
-        let amount = power.mul(new BN(_amount));
-        amount = amount.toString();
 
         provider.sendTransaction({
           from: address,
           to: VENDOR_ADDRESS,
           gasPrice: "20000000000",
           gas: "210640",
-          value: amount,
-          data: contract.methods.buyTokens(amount).encodeABI()
+          value: parseAmount(_amount),
+          data: contract.methods.buyTokens(parseAmount(_amount)).encodeABI()
         });
       }
     } catch (err) {
       console.error(err);
     }
   };
+
+  const sellJoeToken = async (_amount) => {
+    if (provider && address) {
+      try {
+        const contract = new provider.Contract(joeContract.abi, JOE_TOKEN_ADDRESS);
+        const vContract = new provider.Contract(vendorContract.abi, VENDOR_ADDRESS);
+
+        await provider.sendTransaction({
+          from: address,
+          to: JOE_TOKEN_ADDRESS,
+          data: contract.methods.approve(VENDOR_ADDRESS, parseAmount(_amount)).encodeABI(),
+          gasPrice: "20000000000",
+          gas: "210640",
+        });
+
+        await provider.sendTransaction({
+          from: address,
+          to: VENDOR_ADDRESS,
+          data: vContract.methods.sell(parseAmount(_amount)).encodeABI(),
+          gasPrice: "20000000000",
+          gas: "210640",
+        });
+
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
 
   const connectWallet = async () => {
     try {
@@ -87,6 +113,7 @@ const App = () => {
         onChange={handleAmount}
       />
       <button onClick={() => buyJoeToken(amount)}>buy</button>
+      <button onClick={() => sellJoeToken(amount)}>sell</button>
     </div>
   );
 };

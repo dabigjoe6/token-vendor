@@ -31,7 +31,6 @@ async function main() {
   amount = amount.pow(18);
   amount = amount.mul(1000);
 
-  // amount = amount.mul(10 ** 18);
   amount = amount.toString();
 
   await joeTokenInstance.functions.transfer(vendor.address, amount);
